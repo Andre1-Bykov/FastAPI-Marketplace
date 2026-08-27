@@ -1,6 +1,5 @@
 from sqlalchemy import String, Text, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.orm import relationship
 from app.database.base import Base
 
 
@@ -33,6 +32,11 @@ class Product(Base):
         nullable=False,
     )
 
+
     category: Mapped["Category"] = relationship( # type: ignore
-        back_populates="products"
+        back_populates="products",
     )
+
+    @property
+    def category_name(self) -> str:
+        return self.category.name
