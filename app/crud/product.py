@@ -19,8 +19,48 @@ def create_product(db: Session, product: ProductCreate) -> Product:
 
     return db_product
 
-def get_products(db: Session) -> list[Product]:
-    return db.query(Product).all()
+def get_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    category_id: int | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+            ) -> list[Product]:
+    if category_id is not None:
+        query = db.query(Product).filter(Product.category_id == category_id)
+
+        if min_price is not None:
+            query = query.filter(Product.price >= min_price)
+
+        if max_price is not None:
+            query = query.filter(Product.price <= max_price)
+
+        return (
+            query
+            .offset(skip)
+            .limit(limit)
+                .all()
+            )
+    elif category_id is None:
+        if min_price is not None:
+            query = query.filter(Product.price >= min_price)
+        
+        if max_price is not None:
+                query = query.filter(Product.price <= max_price)
+        
+        return (
+                query
+                .offset(skip)
+                .limit(limit)
+                    .all()
+                )
+    return (
+        db.query(Product)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 def get_product(
     db: Session,

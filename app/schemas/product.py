@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from app.schemas.category import CategoryShort
 
 class ProductCreate(BaseModel):
     name: str
@@ -16,7 +16,7 @@ class ProductRead(BaseModel):
     price: float
     stock: int
     category_id: int
-    category_name: str 
+    category: CategoryShort
     model_config = {
         "from_attributes": True
     }

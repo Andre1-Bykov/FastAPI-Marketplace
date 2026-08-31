@@ -18,3 +18,11 @@ class CategoryRead(BaseModel):
 class CategoryUpdate(BaseModel):
     name: str
     description: str | None = None
+
+class CategoryShort(BaseModel):
+    id: int
+    name: str
+
+    model_config = {
+        "from_attributes": True
+    }
