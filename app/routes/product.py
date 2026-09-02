@@ -22,13 +22,26 @@ def create_product_route(
 @router.get("/", response_model=list[ProductRead])
 def get_products_route(
     skip: int = Query(0, ge=0),
-    limit: int = Query(1, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     category_id: int | None = None,
     min_price: float | None = None,
     max_price: float | None = None,
+    name_of_product: str | None = None,
+    sort_by: str = Query("id", pattern="^(id|name|price|stock|category_id)$"),
+    order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
 ):
-    return get_products(db, skip=skip, limit=limit, category_id=category_id, min_price=min_price, max_price=max_price)
+    return get_products(
+        db,
+        skip=skip,
+        limit=limit,
+        category_id=category_id,
+        min_price=min_price,
+        max_price=max_price,
+        name_of_product=name_of_product,
+        sort_by=sort_by,
+        order=order,
+    )
 
 @router.get("/{product_id}", response_model=ProductRead)
 def get_product_route(

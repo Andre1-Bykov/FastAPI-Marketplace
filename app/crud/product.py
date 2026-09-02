@@ -26,41 +26,38 @@ def get_products(
     category_id: int | None = None,
     min_price: float | None = None,
     max_price: float | None = None,
-            ) -> list[Product]:
+    name_of_product: str | None = None,
+    sort_by: str = "id",
+    order: str = "asc",
+) -> list[Product]:
+    query = db.query(Product)
+
     if category_id is not None:
-        query = db.query(Product).filter(Product.category_id == category_id)
+        query = query.filter(Product.category_id == category_id)
 
-        if min_price is not None:
-            query = query.filter(Product.price >= min_price)
+    if min_price is not None:
+        query = query.filter(Product.price >= min_price)
 
-        if max_price is not None:
-            query = query.filter(Product.price <= max_price)
+    if max_price is not None:
+        query = query.filter(Product.price <= max_price)
 
-        return (
-            query
-            .offset(skip)
-            .limit(limit)
-                .all()
-            )
-    elif category_id is None:
-        if min_price is not None:
-            query = query.filter(Product.price >= min_price)
-        
-        if max_price is not None:
-                query = query.filter(Product.price <= max_price)
-        
-        return (
-                query
-                .offset(skip)
-                .limit(limit)
-                    .all()
-                )
-    return (
-        db.query(Product)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    if name_of_product is not None:
+        query = query.filter(Product.name.ilike(f"%{name_of_product}%"))
+
+    sort_column = {
+        "id": Product.id,
+        "name": Product.name,
+        "price": Product.price,
+        "stock": Product.stock,
+        "category_id": Product.category_id,
+    }.get(sort_by, Product.id)
+
+    if order == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
+
+    return query.offset(skip).limit(limit).all()
 
 def get_product(
     db: Session,
