@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.crud.user import create_user, get_users, get_user_by_id, update_user, delete_user
+from app.crud.user import authenticate_user, create_user, get_users, get_user_by_id, update_user, delete_user
 from app.dependencies.database import get_db
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 router = APIRouter(
@@ -62,3 +62,16 @@ def delete_user_route(
     if deleted_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return deleted_user
+
+@router.post('/{user_id}/verify-password')
+def verify_user_password_route( 
+    user_id: int,
+    password: str,
+    db: Session = Depends(get_db)
+):
+    user = get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_valid = authenticate_user(user, password)
+    return {"is_valid": is_valid}
