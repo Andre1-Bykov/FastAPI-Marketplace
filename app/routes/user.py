@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.security import create_access_token
 from app.crud.user import authenticate_user, create_user, get_users, get_user_by_id, update_user, delete_user
 from app.dependencies.database import get_db
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import LoginRequest, Token, UserCreate, UserRead, UserUpdate
 router = APIRouter(
     prefix='/users',
     tags=['Users'],
@@ -15,6 +16,23 @@ def create_user_route(
     db: Session = Depends(get_db)
 ):
     return create_user(db, user)
+
+
+@router.post('/login', response_model=Token)
+def login_route(
+    credentials: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    user = authenticate_user(db, credentials.email, credentials.password)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_access_token(str(user.id))
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/", response_model=list[UserRead])
 def get_users_route(
@@ -62,16 +80,3 @@ def delete_user_route(
     if deleted_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return deleted_user
-
-@router.post('/{user_id}/verify-password')
-def verify_user_password_route( 
-    user_id: int,
-    password: str,
-    db: Session = Depends(get_db)
-):
-    user = get_user_by_id(db, user_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    is_valid = authenticate_user(user, password)
-    return {"is_valid": is_valid}
