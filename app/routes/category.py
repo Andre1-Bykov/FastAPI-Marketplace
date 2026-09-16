@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.crud.category import create_category, get_categories, get_category, update_category, delete_category
+from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
 
@@ -16,6 +17,7 @@ router = APIRouter(
 def create_category_route(
     category: CategoryCreate,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     return create_category(db, category)
 
@@ -45,6 +47,7 @@ def update_category_route(
     category_id: int,
     category_data: CategoryUpdate,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     category = update_category(db, category_id, category_data)
 
@@ -60,6 +63,7 @@ def update_category_route(
 def delete_category_route(
     category_id: int,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     category = delete_category(db, category_id)
 

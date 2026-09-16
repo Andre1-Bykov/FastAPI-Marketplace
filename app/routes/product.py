@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.crud.product import create_product, get_products, get_product, update_product, delete_product
+from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
 
@@ -16,6 +17,7 @@ router = APIRouter(
 def create_product_route(
     product: ProductCreate,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     return create_product(db, product)
 
@@ -63,6 +65,7 @@ def update_product_route(
     product_id: int,
     product_data: ProductUpdate,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     product = update_product(db, product_id, product_data)
 
@@ -78,6 +81,7 @@ def update_product_route(
 def delete_product_route(
     product_id: int,
     db: Session = Depends(get_db),
+    _: object = Depends(require_admin),
 ):
     product = delete_product(db, product_id)
 

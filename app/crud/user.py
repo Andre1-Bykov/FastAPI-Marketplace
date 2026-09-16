@@ -84,9 +84,12 @@ def authenticate_user(
         email: str,
         password: str
 ) -> User | None:
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(
+        (User.email == email) | (User.username == email)
+    ).first()
     if user is None:
                 return None
     if not verify_password(password, user.hashed_password):
                 return None
     return user
+
