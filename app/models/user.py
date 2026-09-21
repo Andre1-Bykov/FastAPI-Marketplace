@@ -1,7 +1,8 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
+from app.models.cart import Cart
 
 
 class User(Base):
@@ -33,3 +34,10 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(
         default=False
     )
+
+    cart: Mapped["Cart"] = relationship(
+    "Cart",
+    back_populates="user",
+    uselist=False,
+    cascade="all, delete-orphan",
+)
