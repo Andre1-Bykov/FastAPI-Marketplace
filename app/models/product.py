@@ -1,6 +1,13 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Text, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.database.base import Base
+
+if TYPE_CHECKING:
+    from app.models.cart_item import CartItem
+    from app.models.category import Category
 
 
 class Product(Base):
@@ -32,9 +39,13 @@ class Product(Base):
         nullable=False,
     )
 
-
-    category: Mapped["Category"] = relationship( # type: ignore
+    category: Mapped["Category"] = relationship(
         back_populates="products",
+    )
+
+    cart_items: Mapped[list["CartItem"]] = relationship(
+        "CartItem",
+        back_populates="product",
     )
 
     @property

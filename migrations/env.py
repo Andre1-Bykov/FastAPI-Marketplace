@@ -6,6 +6,8 @@ from app.database.base import Base
 from app.models.user import User
 from app.models.category import Category
 from app.models.product import Product
+from app.models.cart import Cart
+from app.models.cart_item import CartItem
 from alembic import context
 
 
@@ -24,7 +26,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-
+print("ALEMBIC TABLES:", list(target_metadata.tables.keys()))
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

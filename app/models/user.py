@@ -2,7 +2,10 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
-from app.models.cart import Cart
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.cart import Cart
 
 
 class User(Base):

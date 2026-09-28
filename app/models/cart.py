@@ -1,7 +1,13 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
+
+if TYPE_CHECKING:
+    from app.models.cart_item import CartItem
+    from app.models.user import User
 
 
 class Cart(Base):
@@ -19,7 +25,7 @@ class Cart(Base):
         back_populates="cart",
     )
 
-    items: Mapped[list["CartItem"]] = relationship( # type: ignore
+    items: Mapped[list["CartItem"]] = relationship(
         "CartItem",
         back_populates="cart",
         cascade="all, delete-orphan",
