@@ -1,6 +1,9 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.core.cache import get_cached_catalog, set_cached_catalog
 from app.crud.product import create_product, get_products, get_product, update_product, delete_product
 from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
@@ -33,7 +36,24 @@ def get_products_route(
     order: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
 ):
-    return get_products(
+    cache_signature = json.dumps(
+        {
+            "kind": "list",
+            "skip": skip,
+            "limit": limit,
+            "category_id": category_id,
+            "min_price": min_price,
+            "max_price": max_price,
+            "name": name_of_product,
+            "sort_by": sort_by,
+            "order": order,
+        },
+        sort_keys=True,
+    )
+    cached = get_cached_catalog(cache_signature)
+    if cached is not None:
+        return cached
+    products = get_products(
         db,
         skip=skip,
         limit=limit,
@@ -44,12 +64,21 @@ def get_products_route(
         sort_by=sort_by,
         order=order,
     )
+    set_cached_catalog(
+        cache_signature,
+        [ProductRead.model_validate(product).model_dump(mode="json") for product in products],
+    )
+    return products
 
 @router.get("/{product_id}", response_model=ProductRead)
 def get_product_route(
     product_id: int,
     db: Session = Depends(get_db),
 ):
+    cache_signature = f"product:{product_id}"
+    cached = get_cached_catalog(cache_signature)
+    if cached is not None:
+        return cached
     product = get_product(db, product_id)
 
     if product is None:
@@ -58,6 +87,10 @@ def get_product_route(
             detail="Product not found",
         )
 
+    set_cached_catalog(
+        cache_signature,
+        ProductRead.model_validate(product).model_dump(mode="json"),
+    )
     return product
 
 @router.put("/{product_id}", response_model=ProductRead)

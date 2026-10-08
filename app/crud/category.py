@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from app.core.cache import invalidate_catalog_cache
 
 from app.models.category import Category
 from app.schemas.category import CategoryCreate, CategoryUpdate
@@ -13,6 +14,7 @@ def create_category(db: Session, category: CategoryCreate) -> Category:
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
+    invalidate_catalog_cache()
 
     return db_category
 def get_categories(db: Session) -> list[Category]:
@@ -40,6 +42,7 @@ def update_category(
 
     db.commit()
     db.refresh(category)
+    invalidate_catalog_cache()
 
     return category
 
@@ -55,5 +58,6 @@ def delete_category(db: Session, category_id: int) -> Category | None:
 
     db.delete(category)
     db.commit()
+    invalidate_catalog_cache()
 
     return category

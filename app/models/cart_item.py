@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -13,6 +13,7 @@ class CartItem(Base):
     __tablename__ = "cart_items"
 
     __table_args__ = (
+        CheckConstraint("quantity > 0", name="ck_cart_items_quantity_positive"),
         UniqueConstraint(
             "cart_id",
             "product_id",
@@ -34,12 +35,12 @@ class CartItem(Base):
 
     quantity: Mapped[int] = mapped_column(nullable=False)
 
-    cart = relationship(
+    cart: Mapped["Cart"] = relationship(
         "Cart",
         back_populates="items",
     )
 
-    product = relationship(
+    product: Mapped["Product"] = relationship(
         "Product",
         back_populates="cart_items",
     )

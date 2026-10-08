@@ -1,28 +1,33 @@
-from pydantic import BaseModel, EmailStr  
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from typing import Annotated
+
+
+Username = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=3, max_length=50)
+]
+Password = Annotated[str, StringConstraints(min_length=8, max_length=128)]
 
 class UserCreate(BaseModel):
-    username: str | None = None
+    username: Username
     email: EmailStr
-    password: str
+    password: Password
     
 
 class UserRead(BaseModel):
     id: int
     username: str
     email: EmailStr
-    model_config = {
-            "from_attributes": True
-        }
+    model_config = ConfigDict(from_attributes=True)
 
 class UserUpdate(BaseModel):
-    username: str | None = None
+    username: Username | None = None
     email: EmailStr
-    password: str
+    password: Password
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=1, max_length=128)
 
 
 class Token(BaseModel):

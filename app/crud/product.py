@@ -1,5 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+
 from app.crud.category import get_category
+from app.core.cache import invalidate_catalog_cache
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate
 
@@ -13,9 +15,14 @@ def create_product(db: Session, product: ProductCreate) -> Product:
         category_id=product.category_id,
     )
 
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
+    try:
+        db.add(db_product)
+        db.commit()
+        db.refresh(db_product)
+        invalidate_catalog_cache()
+    except Exception:
+        db.rollback()
+        raise
 
     return db_product
 
@@ -30,7 +37,7 @@ def get_products(
     sort_by: str = "id",
     order: str = "asc",
 ) -> list[Product]:
-    query = db.query(Product)
+    query = db.query(Product).options(joinedload(Product.category))
 
     if category_id is not None:
         query = query.filter(Product.category_id == category_id)
@@ -64,7 +71,7 @@ def get_product(
     product_id: int,
 ) -> Product | None:
     return (
-        db.query(Product)
+        db.query(Product).options(joinedload(Product.category))
         .filter(Product.id == product_id)
         .first()
     )
@@ -75,7 +82,7 @@ def update_product(
     product_data: ProductUpdate,
 ) -> Product | None:
     product = (
-        db.query(Product)
+        db.query(Product).options(joinedload(Product.category))
         .filter(Product.id == product_id)
         .first()
     )
@@ -89,8 +96,13 @@ def update_product(
     product.stock = product_data.stock
     product.category_id = product_data.category_id
 
-    db.commit()
-    db.refresh(product)
+    try:
+        db.commit()
+        db.refresh(product)
+        invalidate_catalog_cache()
+    except Exception:
+        db.rollback()
+        raise
 
     return product
 
@@ -108,6 +120,11 @@ def delete_product(
         return None
 
     db.delete(product)
-    db.commit()
+    try:
+        db.commit()
+        invalidate_catalog_cache()
+    except Exception:
+        db.rollback()
+        raise
 
     return product

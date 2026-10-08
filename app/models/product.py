@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
+from decimal import Decimal
 
-from sqlalchemy import String, Text, ForeignKey, Numeric
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -8,10 +9,15 @@ from app.database.base import Base
 if TYPE_CHECKING:
     from app.models.cart_item import CartItem
     from app.models.category import Category
+    from app.models.order_item import OrderItem
 
 
 class Product(Base):
     __tablename__ = "products"
+    __table_args__ = (
+        CheckConstraint("stock >= 0", name="ck_products_stock_nonnegative"),
+        Index("ix_products_category_id", "category_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -25,12 +31,13 @@ class Product(Base):
         nullable=False,
     )
 
-    price: Mapped[float] = mapped_column(
+    price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,
     )
 
     stock: Mapped[int] = mapped_column(
+        nullable=False,
         default=0,
     )
 
@@ -45,6 +52,11 @@ class Product(Base):
 
     cart_items: Mapped[list["CartItem"]] = relationship(
         "CartItem",
+        back_populates="product",
+    )
+
+    order_items: Mapped[list["OrderItem"]] = relationship(
+        "OrderItem",
         back_populates="product",
     )
 

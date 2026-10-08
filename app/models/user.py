@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.cart import Cart
+    from app.models.order import Order
 
 
 class User(Base):
@@ -39,8 +40,13 @@ class User(Base):
     )
 
     cart: Mapped["Cart"] = relationship(
-    "Cart",
-    back_populates="user",
-    uselist=False,
-    cascade="all, delete-orphan",
-)
+        "Cart",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
+    orders: Mapped[list["Order"]] = relationship(
+        "Order",
+        back_populates="user",
+    )
