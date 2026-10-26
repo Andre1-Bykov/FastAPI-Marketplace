@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database.base import Base
 from app.models.category import Category
 from app.models.product import Product
-from app.crud.product import get_products
+from app.services.product_service import get_products
 
 
 def test_get_products_sort_by_price_asc():

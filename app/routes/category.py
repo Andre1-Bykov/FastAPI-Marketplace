@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.crud.category import create_category, get_categories, get_category, update_category, delete_category
+from app.services.category_service import (
+    create_category,
+    delete_category,
+    get_categories,
+    get_category,
+    update_category,
+)
 from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
 from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate

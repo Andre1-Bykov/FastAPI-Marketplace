@@ -2,6 +2,8 @@
 
 An API marketplace built with FastAPI, SQLAlchemy, Alembic, PostgreSQL, and optional Redis catalog caching.
 
+Application code is organized into API routes, application services (`app/services/`), and persistence repositories (`app/repositories/`). Routes handle HTTP concerns, services own business rules and transaction boundaries, and repositories encapsulate database queries and persistence operations.
+
 ## Features
 
 - JWT authentication and admin-protected catalog/user operations.

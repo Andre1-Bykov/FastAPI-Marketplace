@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from app.crud.cart import (
+from app.services.cart_service import (
     CartOperationError,
     add_to_cart,
     clear_cart,

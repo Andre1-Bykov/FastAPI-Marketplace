@@ -4,10 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.cache import get_cached_catalog, set_cached_catalog
-from app.crud.product import create_product, get_products, get_product, update_product, delete_product
 from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.services.product_service import (
+    create_product,
+    delete_product,
+    get_product,
+    get_products,
+    update_product,
+)
 
 
 router = APIRouter(
